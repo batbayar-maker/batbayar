@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Дэлхийн Атлас - Дэлгэрэнгүй Хувилбар</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b10;
+  --surface: #0f1419;
+  --surface2: #161c24;
+  --border: rgba(255,255,255,0.07);
+  --gold: #d4a94a;
+  --gold2: #f0c96a;
+  --silver: #a8b4c0;
+  --white: #f0f4f8;
+  --accent: #4a90d4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* HERO SECTION */
+.hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 80px 30px;
+  text-align: center;
+}
+
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; opacity: 0.25; z-index: 0; }
+.orb1 { width:600px; height:600px; background:radial-gradient(circle, var(--gold), transparent); top:-150px; left:-100px; }
+.orb2 { width:500px; height:500px; background:radial-gradient(circle, var(--accent), transparent); bottom:-100px; right:-80px; }
+
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(3rem, 9vw, 6rem);
+  font-weight: 300; line-height: 0.95; margin-bottom: 25px;
+  z-index: 1;
+}
+.hero-title strong {
+  font-weight: 700; font-style: italic;
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold2) 50%, #fff 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* SEARCH & FILTER */
+.controls {
+  width: 100%; max-width: 800px; margin: 0 auto 50px; display: flex; flex-direction: column; gap: 20px; z-index: 2;
+}
+.search-outer { position: relative; width: 100%; }
+.search-inner {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 50px; padding: 5px 25px; display: flex; align-items: center; gap: 15px;
+  transition: 0.3s;
+}
+.search-inner:focus-within { border-color: var(--gold); box-shadow: 0 0 30px rgba(212, 169, 74, 0.15); }
+#searchInput {
+  flex: 1; background: transparent; border: none; color: white; padding: 18px 0;
+  font-family: 'Outfit', sans-serif; font-size: 16px; outline: none;
+}
+
+/* GRID */
+.main { max-width: 1400px; margin: 0 auto; padding: 0 30px 100px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 2px; }
+
+/* CARD */
+.card {
+  position: relative; background: var(--surface); overflow: hidden; cursor: pointer; height: 300px;
+  transition: 0.4s;
+}
+.card-flag { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.2; transition: 0.6s; }
+.card:hover .card-flag { opacity: 0.4; transform: scale(1.1); }
+.card-glass {
+  position: relative; z-index: 2; padding: 35px; height: 100%;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border: 1px solid var(--border);
+}
+.card:hover { border-color: rgba(212, 169, 74, 0.3); }
+.card-continent { font-size: 9px; font-weight: 600; letter-spacing: 3px; color: var(--gold); text-transform: uppercase; }
+.card-name { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 700; margin-top: 5px; color: var(--white); }
+
+/* MODAL */
+.modal-wrap { display: none; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; padding: 20px; }
+.modal-wrap.open { display: flex; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(4,6,10,0.95); backdrop-filter: blur(20px); }
+.modal {
+  position: relative; width: 100%; max-width: 850px; background: var(--surface); border: 1px solid var(--gold); 
+  max-height: 90vh; overflow-y: auto; border-radius: 4px;
+}
+.modal-header img { width: 100%; height: 300px; object-fit: cover; border-bottom: 1px solid var(--border); }
+.modal-body { padding: 50px; }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; color: var(--gold2); line-height: 1; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin: 30px 0; }
+.info-tile { background: var(--surface2); padding: 20px; border: 1px solid var(--border); }
+.info-tile span { display: block; font-size: 10px; color: var(--gold); letter-spacing: 2px; margin-bottom: 5px; }
+.info-tile b { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; color: var(--white); }
+.modal-close { position: absolute; top: 25px; right: 25px; font-size: 35px; color: white; cursor: pointer; background: rgba(0,0,0,0.5); border: none; width: 50px; height: 50px; border-radius: 50%; z-index: 10; }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="hero-eyebrow" style="color: var(--gold); letter-spacing: 5px; margin-bottom: 15px; font-size: 12px; text-transform: uppercase;">Encyclopaedia Mundi</div>
+  <h1 class="hero-title">Дэлхийн<br><strong>Улс Орнуудын</strong><br>Их Лавлах</h1>
+  
+  <div class="controls">
+    <div class="search-outer">
+      <div class="search-inner">
+        <span style="color: var(--gold); font-size: 20px;">🔍</span>
+        <input id="searchInput" type="text" placeholder="Улсын нэр, нийслэл, тив хайх..." autocomplete="off">
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="main">
+  <div class="grid" id="grid"></div>
+</main>
+
+<div class="modal-wrap" id="modalWrap">
+  <div class="modal-backdrop" onclick="closeModal()"></div>
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-header"><img id="mFlag" src=""></div>
+    <div class="modal-body">
+      <h2 id="mName" class="modal-title"></h2>
+      <div id="mContinent" style="color: var(--gold); letter-spacing: 3px; font-size: 12px; margin-bottom: 25px; text-transform: uppercase;"></div>
+      <div class="modal-divider" style="height: 1px; background: var(--border); margin-bottom: 30px;"></div>
+      <div id="mDesc" style="color: var(--silver); line-height: 1.8; font-size: 16px; margin-bottom: 40px; font-weight: 300;"></div>
+      
+      <div class="info-grid">
+        <div class="info-tile"><span>НИЙСЛЭЛ ХОТ</span><b id="mCap"></b></div>
+        <div class="info-tile"><span>ХҮН АМЫН ТОО</span><b id="mPop"></b></div>
+        <div class="info-tile"><span>МӨНГӨН ТЭМДЭГТ</span><b id="mCur"></b></div>
+        <div class="info-tile"><span>УТАСНЫ КОД</span><b id="mCall"></b></div>
+        <div class="info-tile"><span>ГАЗАР НУТАГ</span><b id="mArea"></b></div>
+        <div class="info-tile"><span>АЛБАН ЁСНЫ ХЭЛ</span><b id="mLang"></b></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const countries = [
+  { name: "Монгол", code: "mn", capital: "Улаанбаатар", continent: "Ази", currency: "Төгрөг (MNT)", phone: "+976", pop: "3.4 сая", area: "1,564,116 км²", lang: "Монгол", desc: "Дэлхийн хамгийн сийрэг хүн амтай, нүүдлийн соёл иргэншлээ хадгалсан үзэсгэлэнт тал нутаг. Монгол нь Чингис хааны байгуулсан дэлхийн хамгийн том эзэнт гүрний өлгий нутаг юм. Говийн цөлөөс Алтайн өндөр уулс хүртэлх байгалийн олон бүсийг багтаасан." },
+  { name: "Япон", code: "jp", capital: "Токио", continent: "Ази", currency: "Иен (JPY)", phone: "+81", pop: "125.7 сая", area: "377,975 км²", lang: "Япон", desc: "Технологийн өндөр хөгжил болон эртний соёл уламжлалыг төгс хослуулсан арлын улс. Дэлхийн гурав дахь том эдийн засагтай бөгөөд сахилга бат, урт наслалт, аниме, самурайн соёлоороо алдартай." },
+  { name: "АНУ", code: "us", capital: "Вашингтон", continent: "Америк", currency: "Доллар (USD)", phone: "+1", pop: "331.9 сая", area: "9,833,517 км²", lang: "Англи", desc: "Дэлхийн цорын ганц супер гүрэн. Эдийн засаг, цэрэг арми, энтертайнмент салбарт тэргүүлэгч. 50 мужаас бүрдэх бөгөөд Холливуд, Силикон хөндий зэрэг дэлхийн нөлөө бүхий төвүүд энд байрладаг." },
+  { name: "Герман", code: "de", capital: "Берлин", continent: "Европ", currency: "Евро (EUR)", phone: "+49", pop: "83.2 сая", area: "357,022 км²", lang: "Герман", desc: "Европын эдийн засгийн хөдөлгүүр. Чанартай инженерчлэл, автомашин үйлдвэрлэлээрээ дэлхийд тэргүүлдэг. Шинжлэх ухаан, гүн ухаан, хөгжмийн урлагийн агуу түүхтэй." },
+  { name: "БНХАУ", code: "cn", capital: "Бээжин", continent: "Ази", currency: "Юань (CNY)", phone: "+86", pop: "1.4 тэрбум", area: "9,596,961 км²", lang: "Хятад", desc: "Дэлхийн хамгийн эртний соёл иргэншлүүдийн нэг. Өнөөдөр дэлхийн үйлдвэрлэлийн төв бөгөөд санхүү, технологийн салбарт асар хурдацтай өсөж буй хүчирхэг гүрэн." },
+  { name: "Франц", code: "fr", capital: "Парис", continent: "Европ", currency: "Евро (EUR)", phone: "+33", pop: "67.5 сая", area: "643,801 км²", lang: "Франц", desc: "Урлаг, соёл, загвар болон хоолны урлагийн дэлхийн төв. Жил бүр хамгийн олон жуулчин хүлээн авдаг улс бөгөөд Эйфелийн цамхаг, Луврын музей нь соёлын үнэт өв юм." },
+  { name: "Өмнөд Солонгос", code: "kr", capital: "Сөүл", continent: "Ази", currency: "Воно (KRW)", phone: "+82", pop: "51.7 сая", area: "100,210 км²", lang: "Солонгос", desc: "Хан мөрний гайхамшиг гэгддэг хурдацтай хөгжил. Дижитал технологи, K-Pop, Солонгос кино урлагаараа дэлхийн залуу үеийг байлдан дагуулж буй улс." },
+  { name: "ОХУ", code: "ru", capital: "Москва", continent: "Европ/Ази", currency: "Рубль (RUB)", phone: "+7", pop: "144.1 сая", area: "17,098,242 км²", lang: "Орос", desc: "Дэлхийн хамгийн том газар нутагтай улс. Байгалийн асар их баялагтай, сансар судлал болон сонгодог утга зохиол, балетын урлагаараа дэлхийд гайхагддаг." },
+  { name: "Итали", code: "it", capital: "Ром", continent: "Европ", currency: "Евро (EUR)", phone: "+39", pop: "59.1 сая", area: "301,340 км²", lang: "Итали", desc: "Ромын эзэнт гүрний өлгий нутаг. Сэргэн мандалтын үеийн урлагийн сор бүтээлүүд, дэлхийн хамгийн амттай хоол болон Ferrari, Gucci зэрэг брэндүүдийн эх орон." },
+  { name: "Их Британи", code: "gb", capital: "Лондон", continent: "Европ", currency: "Фунт (GBP)", phone: "+44", pop: "67.3 сая", area: "242,495 км²", lang: "Англи", desc: "Аж үйлдвэрийн хувьсгалын эхлэл цэг. Хаант засаглал, дэлхийн санхүүгийн төв Лондон хот болон Оксфорд, Кембрижийн их сургуулиудаараа дэлхийн боловсролыг тодорхойлогч." },
+  { name: "Турк", code: "tr", capital: "Анкара", continent: "Европ/Ази", currency: "Лира (TRY)", phone: "+90", pop: "85.3 сая", area: "783,356 км²", lang: "Турк", desc: "Европ болон Азийг холбосон гүүр. Османы эзэнт гүрний түүх, гайхалтай архитектур болон аялал жуулчлалын диваажин. Сүүлийн үед кино үйлдвэрлэлээрээ дэлхийд тэргүүлж буй." },
+  { name: "Сингапур", code: "sg", capital: "Сингапур", continent: "Ази", currency: "Доллар (SGD)", phone: "+65", pop: "5.6 сая", area: "728 км²", lang: "Англи, Малай", desc: "Жижигхэн арлын хот улс боловч дэлхийн санхүү, тээврийн хамгийн чухал зангилаа. Цэвэр цэмцгэр байдал, аюулгүй орчин, өндөр сахилга батаараа дэлхийн жишиг болсон улс." },
+  { name: "Австрали", code: "au", capital: "Канберра", continent: "Далайн орнууд", currency: "Доллар (AUD)", phone: "+61", pop: "26.0 сая", area: "7,692,024 км²", lang: "Англи", desc: "Тив болон улс гэсэн статустай цорын ганц газар. Кенгуру, Коала зэрэг өвөрмөц ан амьтад, Сиднейн дуурийн театр, үзэсгэлэнт далайн эргүүдээрээ алдартай." },
+  { name: "Бразил", code: "br", capital: "Бразилиа", continent: "Америк", currency: "Реал (BRL)", phone: "+55", pop: "214.3 сая", area: "8,515,767 км²", lang: "Португал", desc: "Амазоны ширэнгэн ой, хөлбөмбөгийн домогт тамирчид болон Карнавал баярын эх орон. Өмнөд Америкийн хамгийн том эдийн засагтай улс." },
+  { name: "Энэтхэг", code: "in", capital: "Шинэ Дели", continent: "Ази", currency: "Рупи (INR)", phone: "+91", pop: "1.42 тэрбум", area: "3,287,263 км²", lang: "Хинди, Англи", desc: "Дэлхийн хамгийн олон хүн амтай ардчилсан улс. Баялаг соёл, халуун ногоотой хоол, Таж Махал болон мэдээллийн технологийн салбарын гол боловсон хүчнийг бэлтгэгч." },
+  { name: "Канада", code: "ca", capital: "Оттава", continent: "Америк", currency: "Доллар (CAD)", phone: "+1", pop: "38.2 сая", area: "9,984,670 км²", lang: "Англи, Франц", desc: "Дэлхийн хоёр дахь том газар нутагтай улс. Найрсаг хүмүүс, мөсөн хоккей болон байгалийн онгон зэрлэг байдлыг төгс хадгалсан, амьдрахад хамгийн таатай орнуудын нэг." },
+  { name: "Швейцарь", code: "ch", capital: "Берн", continent: "Европ", currency: "Франк (CHF)", phone: "+41", pop: "8.7 сая", area: "41,285 км²", lang: "Герман, Франц", desc: "Альпийн нурууны үзэсгэлэнт байгаль, дэлхийн хамгийн чанартай цаг, шоколад болон төвийг сахисан банкны системээрээ алдартай баян орон." },
+  { name: "Египет", code: "eg", capital: "Каир", continent: "Африк", currency: "Фунт (EGP)", phone: "+20", pop: "109.3 сая", area: "1,010,408 км²", lang: "Араб", desc: "Пирамидууд, Сфинкс болон Нил мөрний хөндийд үүссэн хүн төрөлхтний хамгийн эртний соёл иргэншлийн нэг. Түүхэн аялал жуулчлалын гол төв." },
+  { name: "Швед", code: "se", capital: "Стокгольм", continent: "Европ", currency: "Крона (SEK)", phone: "+46", pop: "10.4 сая", area: "450,295 км²", lang: "Швед", desc: "Нийгмийн халамжийн систем, тэгш байдал болон IKEA, Volvo зэрэг инновацилаг компаниудын өлгий нутаг. Скандинавын хойгийн хамгийн том улс." },
+  { name: "Саудын Араб", code: "sa", capital: "Эр-Рияд", continent: "Ази", currency: "Риял (SAR)", phone: "+966", pop: "35.9 сая", area: "2,149,690 км²", lang: "Араб", desc: "Дэлхийн газрын тосны хамгийн том нөөцтэй орнуудын нэг. Исламын шашны ариун газар Мекка, Медина энд байрладаг. Одоо Vision 2030 хөтөлбөрөөр аялал жуулчлалыг хөгжүүлж буй." },
+  { name: "Нидерланд", code: "nl", capital: "Амстердам", continent: "Европ", currency: "Евро (EUR)", phone: "+31", pop: "17.5 сая", area: "41,543 км²", lang: "Нидерланд", desc: "Алтан зул цэцэг, салхин тээрэм, унадаг дугуйн соёл болон усан сувгуудаараа алдартай. Дэлхийн хөдөө аж ахуйн экспортын тэргүүлэгчдийн нэг." },
+  { name: "Мексик", code: "mx", capital: "Мехико", continent: "Америк", currency: "Песо (MXN)", phone: "+52", pop: "126.7 сая", area: "1,964,375 км²", lang: "Испани", desc: "Маяа, Ацтекийн эртний соёл, өвөрмөц амттай Тако хоол болон үзэсгэлэнт далайн эргийн амралтын газруудаараа дэлхийд танигдсан." },
+  { name: "Норвеги", code: "no", capital: "Осло", continent: "Европ", currency: "Крона (NOK)", phone: "+47", pop: "5.4 сая", area: "385,207 км²", lang: "Норвеги", desc: "Дэлхийн хамгийн жаргалтай улсуудын нэг. Фьорд буюу далайн гүн булангууд, туйлын туяа болон цахилгаан автомашины хэрэглээгээрээ дэлхийд тэргүүлдэг." },
+  { name: "Тайланд", code: "th", capital: "Бангкок", continent: "Ази", currency: "Бат (THB)", phone: "+66", pop: "71.6 сая", area: "513,120 км²", lang: "Тай", desc: "Инээмсэглэлийн орон гэгддэг. Буддын шашны сүм хийдүүд, гайхалтай амттай хоол болон аялал жуулчлалын хамгийн хямд, таатай орчны нэг." },
+  { name: "Испани", code: "es", capital: "Мадрид", continent: "Европ", currency: "Евро (EUR)", phone: "+34", pop: "47.4 сая", area: "505,990 км²", lang: "Испани", desc: "Фламенко бүжиг, бухын тулаан, хөлбөмбөгийн Real Madrid, Barcelona багууд болон Гаудигийн архитектурын гайхамшиг болсон Барселона хотоор алдартай." },
+  { name: "Вьетнам", code: "vn", capital: "Ханой", continent: "Ази", currency: "Донг (VND)", phone: "+84", pop: "98.2 сая", area: "331,210 км²", lang: "Вьетнам", desc: "Хурдацтай хөгжиж буй Зүүн Өмнөд Азийн бар улс. Үзэсгэлэнт Халонг булан, кофены соёл болон түүхэн дурсгалт газруудаараа жуулчдыг татдаг." },
+  { name: "Грекийн", code: "gr", capital: "Афин", continent: "Европ", currency: "Евро (EUR)", phone: "+30", pop: "10.4 сая", area: "131,957 км²", lang: "Грек", desc: "Өрнийн соёл иргэншил, ардчилал болон Олимпийн наадмын өлгий нутаг. Цэнхэр далай, цагаан байшингууд бүхий арлууд болон эртний домгуудаараа алдартай." },
+  { name: "Португал", code: "pt", capital: "Лиссабон", continent: "Европ", currency: "Евро (EUR)", phone: "+351", pop: "10.3 сая", area: "92,212 км²", lang: "Португал", desc: "Атлантын далайн эрэгт орших далайчдын улс. Кристиано Роналду, Фаду хөгжим болон эртний түүхт цайз хэрмүүдээрээ гайхагддаг." },
+  { name: "Аргентин", code: "ar", capital: "Буэнос-Айрес", continent: "Америк", currency: "Песо (ARS)", phone: "+54", pop: "45.8 сая", area: "2,780,400 км²", lang: "Испани", desc: "Танго бүжиг, Лионель Месси болон Патагонийн гайхалтай байгаль. Өмнөд Америкийн соёлын томоохон төв." },
+  { name: "Шинэ Зеланд", code: "nz", capital: "Веллингтон", continent: "Далайн орнууд", currency: "Доллар (NZD)", phone: "+64", pop: "5.1 сая", area: "268,021 км²", lang: "Англи, Маори", desc: "Бөгжний эзэн киноны зураг авалт хийгдсэн үзэсгэлэнт байгальтай. Маори соёл, регби спорт болон экстрем аялал жуулчлалын эх орон." }
+];
+
+function render(data) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = data.map(c => `
+    <div class="card" onclick="openModal('${c.code}')">
+      <img class="card-flag" src="https://flagcdn.com/w640/${c.code}.png" loading="lazy">
+      <div class="card-glass">
+        <div>
+          <div class="card-continent">${c.continent}</div>
+          <div class="card-name">${c.name}</div>
+          <div style="font-size:13px; color:var(--silver); font-weight:300;">🏛 ${c.capital}</div>
+        </div>
+        <div style="font-size:10px; color:var(--gold); border-top:1px solid var(--border); padding-top:15px; font-weight:600; letter-spacing:1px;">
+          ДЭЛГЭРЭНГҮЙ МЭДЭЭЛЭЛ →
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModal(code) {
+  const c = countries.find(x => x.code === code);
+  document.getElementById('mFlag').src = `https://flagcdn.com/w640/${c.code}.png`;
+  document.getElementById('mName').textContent = c.name;
+  document.getElementById('mContinent').textContent = c.continent + " | " + c.area;
+  document.getElementById('mDesc').textContent = c.desc;
+  document.getElementById('mCap').textContent = c.capital;
+  document.getElementById('mPop').textContent = c.pop;
+  document.getElementById('mCur').textContent = c.currency;
+  document.getElementById('mCall').textContent = c.phone;
+  document.getElementById('mArea').textContent = c.area;
+  document.getElementById('mLang').textContent = c.lang;
+  
+  document.getElementById('modalWrap').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modalWrap').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  const v = e.target.value.toLowerCase();
+  const filtered = countries.filter(c => 
+    c.name.toLowerCase().includes(v) || 
+    c.capital.toLowerCase().includes(v) ||
+    c.continent.toLowerCase().includes(v)
+  );
+  render(filtered);
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+render(countries);
+</script>
+</body>
+</html>
