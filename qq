@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дэлхийн Улсуудын Дэлгэрэнгүй Сан</title>
+    <style>
+        :root {
+            --primary: #003366;
+            --accent: #ffcc00;
+            --bg: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; }
+        
+        .search-container {
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid #e0e0e0;
+            font-size: 18px;
+            outline: none;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .search-box:focus {
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        /* Картны шинэ загвар */
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid #eee;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+        }
+
+        .flag-wrapper {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            background: #eee;
+        }
+
+        .flag-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-content {
+            padding: 20px;
+        }
+
+        .card-content h3 {
+            margin: 0 0 10px 0;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-label { color: var(--text-muted); }
+        .info-value { font-weight: 600; }
+
+        /* Modal / Поп-ап */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            animation: slideUp 0.4s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            height: 250px;
+            position: relative;
+        }
+
+        .modal-flag {
+            width: 100%; height: 100%; object-fit: cover;
+        }
+
+        .modal-body {
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: white; border-radius: 50%;
+            width: 40px; height: 40px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; cursor: pointer; z-index: 10;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        .full-info {
+            grid-column: span 2;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            line-height: 1.6;
+        }
+
+        .currency-tag {
+            background: var(--accent);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌏 Улс Орнуудын Лавлах</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-box" placeholder="Улс, нийслэл эсвэл мөнгөн тэмдэгтээр хайх...">
+        </div>
+    </header>
+
+    <div class="grid" id="countriesGrid"></div>
+</div>
+
+<div class="modal" id="countryModal">
+    <div class="modal-content">
+        <div class="close-btn" onclick="closeModal()">&times;</div>
+        <div class="modal-header">
+            <img src="" id="modalFlag" class="modal-flag">
+        </div>
+        <div class="modal-body">
+            <h2 id="modalName" style="grid-column: span 2; margin: 0; color: var(--primary);"></h2>
+            <div>
+                <p class="info-label">Нийслэл</p>
+                <p class="info-value" id="modalCapital"></p>
+            </div>
+            <div>
+                <p class="info-label">Мөнгөн тэмдэгт</p>
+                <p class="info-value" id="modalCurrency"></p>
+            </div>
+            <div>
+                <p class="info-label">Утасны код</p>
+                <p class="info-value" id="modalPhone"></p>
+            </div>
+            <div>
+                <p class="info-label">Домэйн (.tld)</p>
+                <p class="info-value" id="modalDomain"></p>
+            </div>
+            <div class="full-info" id="modalDesc"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const countries = [
+        { 
+            name: "Монгол", code: "mn", capital: "Улаанбаатар", continent: "Ази", 
+            currency: "Төгрөг (MNT)", phone: "+976", domain: ".mn", 
+            desc: "Төв Азид байрладаг, дэлхийн хамгийн сийрэг хүн амтай улс. Нүүдлийн соёл иргэншил болон уул уурхай дээр суурилсан эдийн засагтай."
+        },
+        { 
+            name: "Япон", code: "jp", capital: "Токио", continent: "Ази", 
+            currency: "Иен (JPY)", phone: "+81", domain: ".jp", 
+            desc: "Дэлхийн технологийн тэргүүлэгч орнуудын нэг. Өвөрмөц соёл, сахилга бат, урт наслалтаараа алдартай."
+        },
+        { 
+            name: "АНУ", code: "us", capital: "Вашингтон", continent: "Америк", 
+            currency: "Доллар (USD)", phone: "+1", domain: ".us", 
+            desc: "Дэлхийн хамгийн том эдийн засагтай гүрэн. Технологи, энтертайнмент, цэргийн хүчин чадлаараа дэлхийд нөлөөлөгч."
+        },
+        { 
+            name: "Герман", code: "de", capital: "Берлин", continent: "Европ", 
+            currency: "Евро (EUR)", phone: "+49", domain: ".de", 
+            desc: "Европын Холбооны хамгийн том эдийн засаг. Чанартай инженерчлэл болон автомашин үйлдвэрлэлээрээ дэлхийд танигдсан."
+        },
+        { 
+            name: "Сингапур", code: "sg", capital: "Сингапур", continent: "Ази", 
+            currency: "Сингапур Доллар (SGD)", phone: "+65", domain: ".sg", 
+            desc: "Азийн санхүү, тээврийн хамгийн том зангилаа цэг. Маш цэвэрхэн, аюулгүй, өндөр хөгжилтэй хот улс."
+        },
+        { 
+            name: "Их Британи", code: "gb", capital: "Лондон", continent: "Европ", 
+            currency: "Фунт Стерлинг (GBP)", phone: "+44", domain: ".uk", 
+            desc: "Түүхэн Хаант засаглалтай, дэлхийн санхүү болон боловсролын томоохон төв."
+        }
+    ];
+
+    const grid = document.getElementById('countriesGrid');
+    const modal = document.getElementById('countryModal');
+
+    function render(data) {
+        grid.innerHTML = '';
+        data.forEach((c, index) => {
+            const flagUrl = `https://flagcdn.com/w640/${c.code}.png`;
+            grid.innerHTML += `
+                <div class="card" onclick="openModal(${countries.indexOf(c)})">
+                    <div class="flag-wrapper">
+                        <img src="${flagUrl}" class="flag-img" loading="lazy">
+                    </div>
+                    <div class="card-content">
+                        <h3>${c.name} <span class="currency-tag">${c.currency.split(' ')[1]}</span></h3>
+                        <div class="info-row">
+                            <span class="info-label">Нийслэл:</span>
+                            <span class="info-value">${c.capital}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Утас:</span>
+                            <span class="info-value">${c.phone}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function openModal(idx) {
+        const c = countries[idx];
+        document.getElementById('modalFlag').src = `https://flagcdn.com/w640/${c.code}.png`;
+        document.getElementById('modalName').innerText = c.name;
+        document.getElementById('modalCapital').innerText = c.capital;
+        document.getElementById('modalCurrency').innerText = c.currency;
+        document.getElementById('modalPhone').innerText = c.phone;
+        document.getElementById('modalDomain').innerText = c.domain;
+        document.getElementById('modalDesc').innerText = c.desc;
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() { modal.style.display = 'none'; }
+
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        const val = e.target.value.toLowerCase();
+        const filtered = countries.filter(c => 
+            c.name.toLowerCase().includes(val) || 
+            c.capital.toLowerCase().includes(val) ||
+            c.currency.toLowerCase().includes(val)
+        );
+        render(filtered);
+    });
+
+    window.onclick = (e) => { if(e.target == modal) closeModal(); }
+
+    render(countries);
+</script>
+
+</body>
+</html>

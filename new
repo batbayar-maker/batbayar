@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Atlas Pro - Дэлхийн Улсууд</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+        }
+
+        /* Харанхуй горимын өнгө */
+        body.dark-mode {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            transition: background 0.3s;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+
+        header { text-align: center; margin-bottom: 40px; }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .search-box {
+            padding: 12px 25px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            color: var(--text);
+            outline: none;
+        }
+
+        .filter-select, .theme-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .flag-img { width: 100%; height: 160px; object-fit: cover; }
+
+        .card-body { padding: 20px; }
+
+        .card-title { font-size: 1.25rem; font-weight: 700; margin: 0 0 10px 0; }
+
+        .stat { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; }
+
+        .label { color: var(--text-muted); }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            padding: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute; top: 15px; right: 20px;
+            font-size: 30px; cursor: pointer; color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .modal-header img { width: 100%; height: 250px; object-fit: cover; }
+
+        .modal-body { padding: 30px; }
+
+        .btn-map {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        #loading { text-align: center; font-size: 1.5rem; padding: 50px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌏 Global Atlas Pro</h1>
+        <p>Дэлхийн бүх улсын мэдээллийг нэг дороос</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="search" class="search-box" placeholder="Улсын нэрээр хайх...">
+        <select id="filter" class="filter-select">
+            <option value="all">Бүх тив</option>
+            <option value="Africa">Африк</option>
+            <option value="Americas">Америк</option>
+            <option value="Asia">Ази</option>
+            <option value="Europe">Европ</option>
+            <option value="Oceania">Далайн орнууд</option>
+        </select>
+        <button id="themeToggle" class="theme-btn">🌙 Dark Mode</button>
+    </div>
+
+    <div id="loading">Мэдээллийг ачаалж байна...</div>
+    <div id="grid" class="grid"></div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <div class="modal-header">
+            <img id="mFlag" src="">
+        </div>
+        <div class="modal-body">
+            <h2 id="mName"></h2>
+            <div id="mDetails"></div>
+            <a id="mMap" target="_blank" class="btn-map">📍 Газрын зураг дээр харах</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    let allCountries = [];
+
+    // 1. API-аас өгөгдөл татах
+    async function fetchCountries() {
+        try {
+            const res = await fetch('https://restcountries.com/v3.1/all');
+            const data = await res.json();
+            // Нэрээр нь эрэмбэлэх
+            allCountries = data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+            document.getElementById('loading').style.display = 'none';
+            displayCountries(allCountries);
+        } catch (err) {
+            document.getElementById('loading').innerText = "Өгөгдөл татахад алдаа гарлаа.";
+        }
+    }
+
+    // 2. Улсуудыг дэлгэцэнд харуулах
+    function displayCountries(list) {
+        const grid = document.getElementById('grid');
+        grid.innerHTML = list.map(c => `
+            <div class="card" onclick="openModal('${c.cca3}')">
+                <img src="${c.flags.svg}" class="flag-img" loading="lazy">
+                <div class="card-body">
+                    <h3 class="card-title">${c.name.common}</h3>
+                    <div class="stat"><span class="label">Нийслэл:</span> <span>${c.capital ? c.capital[0] : 'Байхгүй'}</span></div>
+                    <div class="stat"><span class="label">Хүн ам:</span> <span>${c.population.toLocaleString()}</span></div>
+                    <div class="stat"><span class="label">Тив:</span> <span>${c.region}</span></div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // 3. Модал нээх (Дэлгэрэнгүй)
+    function openModal(code) {
+        const c = allCountries.find(x => x.cca3 === code);
+        document.getElementById('mFlag').src = c.flags.svg;
+        document.getElementById('mName').innerText = c.name.official;
+        
+        const currencies = c.currencies ? Object.values(c.currencies).map(curr => `${curr.name} (${curr.symbol})`).join(', ') : 'Мэдээлэлгүй';
+        const languages = c.languages ? Object.values(c.languages).join(', ') : 'Мэдээлэлгүй';
+
+        document.getElementById('mDetails').innerHTML = `
+            <div class="stat"><span class="label">Мөнгөн тэмдэгт:</span> <span>${currencies}</span></div>
+            <div class="stat"><span class="label">Хэл:</span> <span>${languages}</span></div>
+            <div class="stat"><span class="label">Бүс нутаг:</span> <span>${c.subregion}</span></div>
+            <div class="stat"><span class="label">Талбай:</span> <span>${c.area.toLocaleString()} км²</span></div>
+            <div class="stat"><span class="label">Домэйн:</span> <span>${c.tld ? c.tld[0] : '-'}</span></div>
+        `;
+        document.getElementById('mMap').href = c.maps.googleMaps;
+        document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    // 4. Хайлт ба Шүүлтүүр
+    document.getElementById('search').addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allCountries.filter(c => c.name.common.toLowerCase().includes(term));
+        displayCountries(filtered);
+    });
+
+    document.getElementById('filter').addEventListener('change', (e) => {
+        const region = e.target.value;
+        const filtered = region === 'all' ? allCountries : allCountries.filter(c => c.region === region);
+        displayCountries(filtered);
+    });
+
+    // 5. Dark Mode шилжүүлэгч
+    document.getElementById('themeToggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        document.getElementById('themeToggle').innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+    });
+
+    // Гадна дарахад хаах
+    window.onclick = (e) => { if(e.target.id === 'modal') closeModal(); }
+
+    fetchCountries();
+</script>
+
+</body>
+</html>
